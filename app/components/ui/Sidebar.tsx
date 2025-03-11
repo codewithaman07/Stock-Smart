@@ -1,8 +1,8 @@
 'use client';
 
 import { cn } from "../../../lib/utils";
-import { Button } from "./button";
-import { ScrollArea } from "./scroll-area";
+import { Button } from "@/app/components/ui/button";
+import { ScrollArea } from "@/app/components/ui/scroll-area";
 import { 
   LineChart, 
   Newspaper, 
