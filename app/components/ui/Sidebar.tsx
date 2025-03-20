@@ -69,12 +69,12 @@ export function Sidebar() {
 
       <div
         className={cn(
-          "fixed top-0 left-0 h-screen flex flex-col border-r bg-gray-50 transition-all duration-300 ease-in-out z-40",
+          "fixed top-0 left-0 h-screen flex flex-col border-r bg-background transition-all duration-300 ease-in-out z-40",
           isOpen ? "w-64" : "w-16"
         )}
       >
         <div className="p-4 flex items-center justify-between">
-          {isOpen && <h1 className="text-xl font-bold text-gray-800">Stock Smart</h1>}
+          {isOpen && <h1 className="text-xl font-bold">Stock Smart</h1>}
           <Button
             variant="ghost"
             size="icon"
@@ -94,7 +94,7 @@ export function Sidebar() {
                     variant={pathname === item.href ? "secondary" : "ghost"}
                     className={cn(
                       "w-full justify-start gap-2",
-                      pathname === item.href && "bg-gray-200"
+                      pathname === item.href && "bg-muted"
                     )}
                   >
                     <Icon className="h-4 w-4" />

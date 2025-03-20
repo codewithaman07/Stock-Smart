@@ -4,7 +4,7 @@ import { useState, useEffect } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '../components/ui/card';
 import { Input } from '../components/ui/input';
 import { Button } from '../components/ui/button';
-import { Search, ChevronLeft, ChevronRight, Brain } from 'lucide-react';
+import { Search, ChevronLeft, ChevronRight, Brain, Calendar } from 'lucide-react';
 import { useRouter } from 'next/navigation';
 
 interface NewsArticle {
@@ -50,9 +50,15 @@ export default function NewsPage() {
       const response = await fetch(`/api/news?query=${encodeURIComponent(debouncedQuery || 'stock market')}&page=${page}`);
       if (!response.ok) throw new Error('Failed to fetch news');
       const data: NewsResponse = await response.json();
-      setNews(data.articles);
-      setTotalPages(Math.ceil(data.totalResults / 10));
-      localStorage.setItem('newsData', JSON.stringify(data.articles));
+      
+      // Sort articles by date (newest first)
+      const sortedArticles = data.articles.sort((a, b) => 
+        new Date(b.publishedAt).getTime() - new Date(a.publishedAt).getTime()
+      );
+
+      setNews(sortedArticles);
+      setTotalPages(Math.ceil(sortedArticles.length / 10));
+      localStorage.setItem('newsData', JSON.stringify(sortedArticles));
     } catch (err) {
       setError('Failed to load news');
       console.error(err);
@@ -68,12 +74,12 @@ export default function NewsPage() {
 
   const handleSearch = (e: React.FormEvent) => {
     e.preventDefault();
-    setPage(1); // Reset to first page when searching
+    setPage(1);
   };
 
   const handleQueryChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setQuery(e.target.value);
-    setPage(1); // Reset to first page when query changes
+    setPage(1);
   };
 
   const handleAnalyze = (index: number) => {
@@ -94,19 +100,21 @@ export default function NewsPage() {
     <div className="container mx-auto p-6">
       <h1 className="text-3xl font-bold mb-6">Stock Market News</h1>
 
-      <form onSubmit={handleSearch} className="flex gap-4 mb-6">
-        <Input
-          type="text"
-          placeholder="Search news..."
-          value={query}
-          onChange={handleQueryChange}
-          className="flex-1"
-        />
-        <Button type="submit" disabled={loading}>
-          <Search className="h-4 w-4 mr-2" />
-          Search
-        </Button>
-      </form>
+      <div className="flex flex-col md:flex-row gap-4 mb-6">
+        <form onSubmit={handleSearch} className="flex gap-4 flex-1">
+          <Input
+            type="text"
+            placeholder="Search news..."
+            value={query}
+            onChange={handleQueryChange}
+            className="flex-1"
+          />
+          <Button type="submit" disabled={loading}>
+            <Search className="h-4 w-4 mr-2" />
+            Search
+          </Button>
+        </form>
+      </div>
 
       {error && (
         <div className="text-red-500 mb-4">{error}</div>
@@ -135,7 +143,7 @@ export default function NewsPage() {
                       variant="default"
                       size="sm"
                       onClick={() => handleAnalyze(index)}
-                      className="bg-black-600 hover:bg-black-700 text-black font-semibold shadow-md hover:shadow-lg transform hover:scale-105 transition-all duration-200"
+                      className="bg-black hover:bg-gray-800 text-white font-semibold shadow-md hover:shadow-lg transform hover:scale-105 transition-all duration-200 cursor-pointer"
                     >
                       <Brain className="h-4 w-4 mr-2" />
                       Analyze
@@ -155,7 +163,10 @@ export default function NewsPage() {
                       <p className="text-gray-600 mb-2">{article.description}</p>
                       <div className="flex justify-between items-center text-sm text-gray-500">
                         <span>{article.source.name}</span>
-                        <span>{formatDate(article.publishedAt)}</span>
+                        <span className="flex items-center gap-1">
+                          <Calendar className="h-4 w-4" />
+                          {formatDate(article.publishedAt)}
+                        </span>
                       </div>
                     </div>
                   </div>

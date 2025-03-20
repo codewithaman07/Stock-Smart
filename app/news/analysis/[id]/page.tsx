@@ -39,6 +39,9 @@ export default function NewsAnalysisPage() {
           throw new Error('No news data found');
         }
         const articles = JSON.parse(newsData);
+        if (!params.id) {
+          throw new Error('Article ID is required');
+        }
         const articleId = typeof params.id === 'string' ? parseInt(params.id) : parseInt(params.id[0]);
         const article = articles[articleId];
         if (!article) {
@@ -53,14 +56,14 @@ export default function NewsAnalysisPage() {
             'Content-Type': 'application/json',
           },
           body: JSON.stringify({
-            text: `Analyze this stock market news and determine if it has a positive, negative, or neutral impact on the market. Provide a brief explanation.
+            text: `Analyze this stock market news and determine if it has a positive, negative, or neutral impact on the market. Provide a brief explanation, Mention the stocks which will affect by it.
 
 News Title: ${article.title}
 Description: ${article.description}
 
 Please format your response as follows:
 MARKET IMPACT: [POSITIVE/NEGATIVE/NEUTRAL]
-Explanation: [2-3 sentences explaining why]`
+Explanation: [3-4 sentences explaining why]`
           }),
         });
 
@@ -70,7 +73,7 @@ Explanation: [2-3 sentences explaining why]`
         
         // Parse the analysis text
         const impactMatch = analysisText.match(/MARKET IMPACT:\s*(POSITIVE|NEGATIVE|NEUTRAL)/i);
-        const explanationMatch = analysisText.match(/Explanation:\s*(.*?)(?=\n|$)/s);
+        const explanationMatch = analysisText.match(/Explanation:\s*([\s\S]*?)(?=\n|$)/);
         
         setAnalysis({
           impact: (impactMatch?.[1] || 'NEUTRAL') as 'POSITIVE' | 'NEGATIVE' | 'NEUTRAL',
