@@ -1,140 +1,193 @@
 'use client';
 
-import { useEffect, useState } from 'react';
-import { NewsAnalysis } from '../components/ui/NewsAnalysis';
+import { useState, useEffect } from 'react';
+import { Card, CardContent, CardHeader, CardTitle } from '../components/ui/card';
+import { Input } from '../components/ui/input';
 import { Button } from '../components/ui/button';
-import { Loader2 } from 'lucide-react';
+import { Search, ChevronLeft, ChevronRight, Brain } from 'lucide-react';
+import { useRouter } from 'next/navigation';
 
-interface NewsItem {
+interface NewsArticle {
   title: string;
   description: string;
   url: string;
+  urlToImage: string;
   publishedAt: string;
   source: {
     name: string;
   };
-  urlToImage?: string;
+}
+
+interface NewsResponse {
+  articles: NewsArticle[];
+  totalResults: number;
+  status: string;
 }
 
 export default function NewsPage() {
-  const [news, setNews] = useState<NewsItem[]>([]);
+  const router = useRouter();
+  const [news, setNews] = useState<NewsArticle[]>([]);
   const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
-  const [displayCount, setDisplayCount] = useState(10);
+  const [error, setError] = useState('');
+  const [query, setQuery] = useState('');
+  const [page, setPage] = useState(1);
+  const [totalPages, setTotalPages] = useState(1);
+  const [debouncedQuery, setDebouncedQuery] = useState('');
 
+  // Debounce search query
   useEffect(() => {
-    const fetchNews = async () => {
-      try {
-        setLoading(true);
-        setError(null);
-        const response = await fetch(
-          `https://newsapi.org/v2/everything?q=stock+market&apiKey=${process.env.NEXT_PUBLIC_NEWS_API_KEY}&language=en&sortBy=publishedAt&pageSize=20`
-        );
-        
-        if (!response.ok) {
-          throw new Error('Failed to fetch news');
-        }
+    const timer = setTimeout(() => {
+      setDebouncedQuery(query);
+    }, 500);
 
-        const data = await response.json();
-        
-        if (data.status === 'error') {
-          throw new Error(data.message || 'Failed to fetch news');
-        }
+    return () => clearTimeout(timer);
+  }, [query]);
 
-        if (!Array.isArray(data.articles)) {
-          throw new Error('Invalid news data format');
-        }
-
-        setNews(data.articles);
-      } catch (error) {
-        console.error('Error fetching news:', error);
-        setError(error instanceof Error ? error.message : 'Failed to fetch news');
-      } finally {
-        setLoading(false);
-      }
-    };
-
-    fetchNews();
-  }, []);
-
-  const handleShowMore = () => {
-    setDisplayCount(prev => Math.min(prev + 10, news.length));
+  const fetchNews = async () => {
+    setLoading(true);
+    setError('');
+    try {
+      const response = await fetch(`/api/news?query=${encodeURIComponent(debouncedQuery || 'stock market')}&page=${page}`);
+      if (!response.ok) throw new Error('Failed to fetch news');
+      const data: NewsResponse = await response.json();
+      setNews(data.articles);
+      setTotalPages(Math.ceil(data.totalResults / 10));
+      localStorage.setItem('newsData', JSON.stringify(data.articles));
+    } catch (err) {
+      setError('Failed to load news');
+      console.error(err);
+    } finally {
+      setLoading(false);
+    }
   };
 
-  if (loading) {
-    return (
-      <div className="flex items-center justify-center h-full">
-        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-gray-900"></div>
-      </div>
-    );
-  }
+  // Fetch news when page or debounced query changes
+  useEffect(() => {
+    fetchNews();
+  }, [page, debouncedQuery]);
 
-  if (error) {
-    return (
-      <div className="flex flex-col items-center justify-center h-full space-y-4">
-        <div className="text-red-500 text-xl">Error</div>
-        <p className="text-gray-600">{error}</p>
-        <button 
-          onClick={() => window.location.reload()}
-          className="px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600 transition-colors"
-        >
-          Try Again
-        </button>
-      </div>
-    );
-  }
+  const handleSearch = (e: React.FormEvent) => {
+    e.preventDefault();
+    setPage(1); // Reset to first page when searching
+  };
+
+  const handleQueryChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    setQuery(e.target.value);
+    setPage(1); // Reset to first page when query changes
+  };
+
+  const handleAnalyze = (index: number) => {
+    router.push(`/news/analysis/${index}`);
+  };
+
+  const formatDate = (dateString: string) => {
+    return new Date(dateString).toLocaleDateString('en-US', {
+      year: 'numeric',
+      month: 'long',
+      day: 'numeric',
+      hour: '2-digit',
+      minute: '2-digit'
+    });
+  };
 
   return (
-    <div className="space-y-6">
-      <div>
-        <h1 className="text-3xl font-bold">Stock Market News</h1>
-        <p className="text-gray-600 mt-2">Latest updates from the financial world</p>
-      </div>
+    <div className="container mx-auto p-6">
+      <h1 className="text-3xl font-bold mb-6">Stock Market News</h1>
 
-      <div className="grid gap-6">
-        {news.slice(0, displayCount).map((item, index) => (
-          <div key={index} className="bg-white rounded-lg shadow-sm border p-6 hover:shadow-md transition-shadow">
-            <div className="flex gap-4">
-              {item.urlToImage && (
-                <img 
-                  src={item.urlToImage} 
-                  alt={item.title}
-                  className="w-32 h-32 object-cover rounded"
-                />
-              )}
-              <div className="flex-1">
-                <h2 className="text-xl font-semibold mb-2">{item.title}</h2>
-                <p className="text-gray-600 mb-4">{item.description}</p>
-                <div className="flex justify-between items-center text-sm text-gray-500">
-                  <span>{item.source.name}</span>
-                  <span>{new Date(item.publishedAt).toLocaleDateString()}</span>
-                </div>
-                <div className="mt-4 flex items-start gap-4">
-                  <div className="flex-1">
-                    <NewsAnalysis 
-                      title={item.title} 
-                      description={item.description} 
-                      url={item.url}
-                    />
+      <form onSubmit={handleSearch} className="flex gap-4 mb-6">
+        <Input
+          type="text"
+          placeholder="Search news..."
+          value={query}
+          onChange={handleQueryChange}
+          className="flex-1"
+        />
+        <Button type="submit" disabled={loading}>
+          <Search className="h-4 w-4 mr-2" />
+          Search
+        </Button>
+      </form>
+
+      {error && (
+        <div className="text-red-500 mb-4">{error}</div>
+      )}
+
+      {loading ? (
+        <div className="text-center py-8">Loading news...</div>
+      ) : (
+        <>
+          <div className="grid gap-6">
+            {news.map((article, index) => (
+              <Card key={index} className="hover:shadow-md transition-shadow">
+                <CardHeader>
+                  <div className="flex justify-between items-start">
+                    <CardTitle className="text-xl">
+                      <a 
+                        href={article.url} 
+                        target="_blank" 
+                        rel="noopener noreferrer"
+                        className="hover:text-blue-600 transition-colors"
+                      >
+                        {article.title}
+                      </a>
+                    </CardTitle>
+                    <Button
+                      variant="default"
+                      size="sm"
+                      onClick={() => handleAnalyze(index)}
+                      className="bg-black-600 hover:bg-black-700 text-black font-semibold shadow-md hover:shadow-lg transform hover:scale-105 transition-all duration-200"
+                    >
+                      <Brain className="h-4 w-4 mr-2" />
+                      Analyze
+                    </Button>
                   </div>
-                </div>
-              </div>
-            </div>
+                </CardHeader>
+                <CardContent>
+                  <div className="grid md:grid-cols-[200px_1fr] gap-4">
+                    {article.urlToImage && (
+                      <img
+                        src={article.urlToImage}
+                        alt={article.title}
+                        className="w-full h-48 object-cover rounded-md"
+                      />
+                    )}
+                    <div>
+                      <p className="text-gray-600 mb-2">{article.description}</p>
+                      <div className="flex justify-between items-center text-sm text-gray-500">
+                        <span>{article.source.name}</span>
+                        <span>{formatDate(article.publishedAt)}</span>
+                      </div>
+                    </div>
+                  </div>
+                </CardContent>
+              </Card>
+            ))}
           </div>
-        ))}
-      </div>
 
-      {displayCount < news.length && (
-        <div className="flex justify-center mt-8">
-          <Button
-            variant="outline"
-            onClick={handleShowMore}
-            className="flex items-center gap-2"
-          >
-            Show More News
-            <Loader2 className="h-4 w-4" />
-          </Button>
-        </div>
+          {totalPages > 1 && (
+            <div className="flex justify-center gap-4 mt-6">
+              <Button
+                variant="outline"
+                onClick={() => setPage(p => Math.max(1, p - 1))}
+                disabled={page === 1}
+              >
+                <ChevronLeft className="h-4 w-4 mr-2" />
+                Previous
+              </Button>
+              <span className="py-2 px-4">
+                Page {page} of {totalPages}
+              </span>
+              <Button
+                variant="outline"
+                onClick={() => setPage(p => Math.min(totalPages, p + 1))}
+                disabled={page === totalPages}
+              >
+                Next
+                <ChevronRight className="h-4 w-4 ml-2" />
+              </Button>
+            </div>
+          )}
+        </>
       )}
     </div>
   );
