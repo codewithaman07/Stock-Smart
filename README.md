@@ -14,7 +14,7 @@ A modern web application that provides real-time stock market news analysis usin
 
 ## Tech Stack
 
-- **Framework**: Next.js 14
+- **Framework**: Next.js 15
 - **Styling**: Tailwind CSS
 - **UI Components**: Shadcn UI
 - **AI Integration**: Google Gemini AI
