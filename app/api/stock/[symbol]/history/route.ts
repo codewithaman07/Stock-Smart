@@ -3,9 +3,9 @@ import { NextResponse } from 'next/server';
 
 export async function GET(
   request: Request,
-  { params }: { params: { symbol: string } }
+  { params }: { params: Promise<{ symbol: string }> }
 ) {
-  const symbol = params.symbol;
+  const { symbol } = await params;
   const { searchParams } = new URL(request.url);
   const period = searchParams.get('period') || '1y';
 
