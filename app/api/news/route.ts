@@ -1,6 +1,6 @@
 import { NextResponse } from 'next/server';
 
-const API_KEY = 'cc830b940cd8459697b3235e557392e4';
+const API_KEY = process.env.NEXT_PUBLIC_NEWS_API_KEY;
 const BASE_URL = 'https://newsapi.org/v2';
 
 export async function GET(request: Request) {

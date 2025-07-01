@@ -3,9 +3,9 @@ import { NextResponse } from 'next/server';
 
 export async function GET(
   request: Request,
-  { params }: { params: { symbol: string } }
+  { params }: { params: Promise<{ symbol: string }> }
 ) {
-  const symbol = params.symbol;
+  const { symbol } = await params;
 
   if (!symbol) {
     return NextResponse.json({ error: 'Symbol is required' }, { status: 400 });
@@ -28,9 +28,8 @@ export async function GET(
       marketCap: quote.marketCap,
       fiftyTwoWeekHigh: quote.fiftyTwoWeekHigh,
       fiftyTwoWeekLow: quote.fiftyTwoWeekLow,
-      averageVolume: quote.averageVolume,
-      trailingPE: quote.trailingPE,
-      dividendYield: quote.dividendYield
+      averageVolume: quote.averageDailyVolume3Month,
+      trailingPE: quote.trailingPE
     };
 
     return NextResponse.json(stockDetails);

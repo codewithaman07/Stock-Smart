@@ -48,18 +48,21 @@ function getPeriodInMs(period: string): number {
     case '6m': return 180 * day;
     case '1y': return 365 * day;
     case '5y': return 5 * 365 * day;
-    default: return 365 * day; // Default to 1 year
+    default: return 365 * day; 
   }
 }
 
-function getInterval(period: string): string {
+function getInterval(period: string): "1d" | "1wk" | "1mo" {
   switch (period) {
-    case '1d': return '5m';
-    case '5d': return '15m';
-    case '1m': return '1d';
-    case '6m': return '1d';
-    case '1y': return '1d';
-    case '5y': return '1wk';
-    default: return '1d';
+    case '1d':
+    case '5d':
+    case '1m':
+    case '6m':
+    case '1y':
+      return '1d';
+    case '5y':
+      return '1wk';
+    default:
+      return '1d';
   }
-} 
+}

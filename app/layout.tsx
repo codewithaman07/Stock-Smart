@@ -7,8 +7,8 @@ import { ThemeProvider } from './components/theme-provider';
 const inter = Inter({ subsets: ["latin"] });
 
 export const metadata: Metadata = {
-  title: "Stock Smart",
-  description: "Your intelligent stock market companion",
+  title: "Stock Smart - AI Trading Assistant",
+  description: "Your intelligent stock market companion powered by AI",
 };
 
 export default function RootLayout({
@@ -25,11 +25,17 @@ export default function RootLayout({
           enableSystem
           disableTransitionOnChange
         >
-          <div className="flex min-h-screen">
+          <div className="flex min-h-screen bg-background overflow-x-hidden">
             <Sidebar />
-            <div className="flex-1 md:ml-64 transition-all duration-300">
-              <main className="p-8">
-                {children}
+            <div className="flex-1 ml-0 md:ml-64 transition-all duration-300 min-w-0">
+              <main className="p-4 pt-16 md:pt-8 md:p-8 w-full">
+                <div className="min-h-[calc(100vh-4rem)] relative max-w-7xl mx-auto">
+                  {/* Background decoration */}
+                  <div className="fixed inset-0 bg-grid-pattern opacity-[0.02] pointer-events-none" />
+                  <div className="relative z-10">
+                    {children}
+                  </div>
+                </div>
               </main>
             </div>
           </div>

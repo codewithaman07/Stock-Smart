@@ -14,11 +14,14 @@ export async function GET(request: Request) {
     const quotes = await Promise.all(
       searchResults.quotes
         .slice(0, 5)
-        .filter(quote => quote.quoteType === 'EQUITY')
-        .map(quote => yahooFinance.quote(quote.symbol))
+        .filter(quote => 'quoteType' in quote && quote.quoteType === 'EQUITY' && 'symbol' in quote && typeof quote.symbol === 'string')
+        .map(quote => yahooFinance.quote((quote as { symbol: string }).symbol))
     );
 
-    const stockResults = quotes.map(quote => ({
+    // Flatten if any quote is an array (QuoteResponseArray)
+    const flatQuotes = quotes.flatMap(q => Array.isArray(q) ? q : [q]);
+
+    const stockResults = flatQuotes.map(quote => ({
       symbol: quote.symbol,
       shortName: quote.shortName || quote.longName || quote.symbol,
       regularMarketPrice: quote.regularMarketPrice,
