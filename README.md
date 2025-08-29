@@ -56,7 +56,7 @@ npm run dev
 
 The following environment variables are required:
 
-- `NEXT_PUBLIC_NEWS_API_KEY`: Your News API key (client-side)
+- `NEWS_API_KEY`: Your News API key (server-side)
 - `GEMINI_API_KEY`: Your Google Gemini AI key (server-side only)
 - `NODE_ENV`: Environment setting (development/production)
 

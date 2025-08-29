@@ -1,9 +1,16 @@
 import { NextResponse } from 'next/server';
 
-const API_KEY = process.env.NEXT_PUBLIC_NEWS_API_KEY;
+const API_KEY = process.env.NEWS_API_KEY;
 const BASE_URL = 'https://newsapi.org/v2';
 
 export async function GET(request: Request) {
+  if (!API_KEY) {
+    return NextResponse.json(
+      { error: 'NEWS_API_KEY is not configured' },
+      { status: 500 }
+    );
+  }
+
   const { searchParams } = new URL(request.url);
   const query = searchParams.get('query') || 'stock market';
   const page = searchParams.get('page') || '1';

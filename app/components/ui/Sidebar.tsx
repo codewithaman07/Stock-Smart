@@ -13,8 +13,7 @@ import {
   X,
   ChevronLeft,
   ChevronRight,
-  Home,
-  BarChart3
+  Home
 } from "lucide-react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
@@ -25,11 +24,6 @@ const sidebarNavItems = [
     title: "Dashboard",
     href: "/",
     icon: Home,
-  },
-  {
-    title: "Market Analysis",
-    href: "/market",
-    icon: BarChart3,
   },
   {
     title: "Stock News",
